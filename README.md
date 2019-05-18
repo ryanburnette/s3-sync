@@ -12,6 +12,7 @@ It is expected that you configure using environment variables.
 ```js
 #!/usr/bin/env node
 
+var path = require('path');
 var s3sync = require('@ryanburnette/s3-sync');
 
 s3sync({

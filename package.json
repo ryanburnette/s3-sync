@@ -1,6 +1,6 @@
 {
   "name": "@ryanburnette/s3-sync",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Recursively sync a directory with S3.",
   "main": "index.js",
   "repository": {
