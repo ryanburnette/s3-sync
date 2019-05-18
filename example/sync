@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+'use strict';
+
+require('dotenv').config({});
+var s3sync = require('../');
+var path = require('path');
+
+s3sync({
+  source: path.resolve(__dirname,'assets.dist'),
+  destination: `${process.env.VERSION}/assets`,
+  bucket: 's3-sync-example',
+  releaseDir: `assets/${process.env.VERSION}`
+});
