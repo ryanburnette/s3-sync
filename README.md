@@ -26,9 +26,9 @@ s3sync(options);
 
 ## Options
 
-### Release Directory
+### Destination
 
-Set `options.releaseDir` to prefix the remote directory. Great for adding a
+Set `options.destination` to prefix the remote directory. Great for adding a
 release value for cache busting.
 
 ### Ignore Dotfiles

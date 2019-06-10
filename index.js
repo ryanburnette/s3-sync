@@ -10,7 +10,7 @@ var readFile = util.promisify(fs.readFile);
 
 var s3 = new AWS.S3({ signatureVersion: 'v4' });
 
-var required = ['source', 'destination', 'bucket'];
+var required = ['source', 'bucket'];
 
 module.exports = function(options) {
   required.forEach(function(k) {
@@ -20,15 +20,12 @@ module.exports = function(options) {
   });
 
   var source = options.source;
-  var destination = options.destination;
+  var destination = options.destination || '';
   var Bucket = options.bucket;
   var ACL = options.acl || 'public-read';
-  var releaseDir = options.releaseDir || '';
 
   var walker = walk(path.resolve(source));
   var files = [];
-
-  // console.log(context,source,destination);process.exit();
 
   walker.on('file', function(root, fileStats, next) {
     var filename = fileStats.name;
@@ -56,15 +53,12 @@ module.exports = function(options) {
   walker.on('end', function() {
     Promise.all(files).then(function(results) {
       results.forEach(function(f) {
-        // console.log(f);
-        var Key = path.join(releaseDir, f.relDir, f.filename);
+        var Key = path.join(destination, f.relDir, f.filename);
         var ContentType = mime.lookup(f.filename) || 'application/octet-stream';
-        // console.log(Key);
         return s3
           .putObject({
             Bucket,
             Key,
-            //Body: f.buffer.toString('binary'),
             Body: f.buffer,
             ACL,
             ContentType

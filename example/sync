@@ -8,7 +8,7 @@ var version = require(path.resolve(__dirname,'../package.json')).version;
 
 s3sync({
   source: path.resolve(__dirname,'assets.dist'),
-  destination: `${version}/assets`,
+  // destination: `${version}/assets`,
   bucket: 's3-sync-example',
   releaseDir: `assets/${version}`,
   ignoreDotfiles: true
