@@ -15,11 +15,33 @@ It is expected that you configure using environment variables.
 var path = require('path');
 var s3sync = require('@ryanburnette/s3-sync');
 
-s3sync({
-  source: path.resolve(__dirname,'assets'),
+var options = {
+  source: path.resolve(__dirname, 'assets'),
   destination: `${process.env.VERSION}`,
   bucket: 'mybucket'
-});
+};
+
+s3sync(options);
+```
+
+## Options
+
+### Ignore Dotfiles
+
+Set `options.ignoreDotfiles = true` to ignore dotfiles.
+
+### Ignore Function
+
+Set `options.ignore` to a custom function to implement custom ignore logic. If
+this function returns truthy, the current file will be ignored.
+
+```javascript
+options.ignore = function({ filepath, filename }) {
+  if (filepath.startsWith('_')) {
+    return true;
+  }
+  // whatever else
+};
 ```
 
 [1]: https://code.ryanburnette.com/ryanburnette/s3-sync.js

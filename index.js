@@ -8,7 +8,7 @@ var walk = require('walk').walk;
 var mime = require('mime-types');
 var readFile = util.promisify(fs.readFile);
 
-var s3 = new AWS.S3({signatureVersion: 'v4'});
+var s3 = new AWS.S3({ signatureVersion: 'v4' });
 
 var required = ['source', 'destination', 'bucket'];
 
@@ -33,6 +33,12 @@ module.exports = function(options) {
   walker.on('file', function(root, fileStats, next) {
     var filename = fileStats.name;
     var fullpath = path.resolve(root, fileStats.name);
+    if (options.ignoreDotfiles && filename.startsWith('.')) {
+      return next();
+    }
+    if (options.ignore && options.ignore({ filename, fullpath })) {
+      return next();
+    }
     files.push(
       readFile(fullpath).then(function(buffer) {
         return {
@@ -47,7 +53,7 @@ module.exports = function(options) {
     next();
   });
 
-  walker.on('end', function () {
+  walker.on('end', function() {
     Promise.all(files).then(function(results) {
       results.forEach(function(f) {
         // console.log(f);
