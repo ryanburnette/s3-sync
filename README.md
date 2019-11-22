@@ -1,8 +1,6 @@
-# @ryanburnette/[s3-sync.js][1]
+# [s3-sync](https://github.com/ryanburnette/s3-sync)
 
-Recursively sync a directory with S3.
-
-I use this to sync my compiled assets with S3 during Heroku deployments.
+Sync a directory with AWS S3.
 
 ## Usage
 
@@ -48,5 +46,3 @@ options.ignore = function({ filepath, filename }) {
   // whatever else
 };
 ```
-
-[1]: https://code.ryanburnette.com/ryanburnette/s3-sync.js

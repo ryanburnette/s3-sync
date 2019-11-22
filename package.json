@@ -1,20 +1,16 @@
 {
   "name": "@ryanburnette/s3-sync",
-  "version": "1.1.0",
-  "description": "Recursively sync a directory with S3.",
+  "version": "2.0.0",
+  "description": "Sync a directory with AWS S3.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "gitea@code.ryanburnette.com:ryanburnette/s3-file-sync.js.git"
+    "url": "https://github.com/ryanburnette/s3-sync.git"
   },
   "author": "Ryan Burnette <ryan.burnette@gmail.com> (https://ryanburnette.com)",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.458.0",
-    "mime-types": "^2.1.24",
+    "@ryanburnette/s3-upload-file": "^1.2.0",
     "walk": "^2.3.14"
-  },
-  "engines": {
-    "node": ">=6.9.0"
   }
 }
