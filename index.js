@@ -19,7 +19,7 @@ function sync(opts) {
   }
 
   return new Promise(function(resolve, reject) {
-    var walker = walk(opts.path);
+    var walker = walk(path.join(opts.cwd || '', opts.path));
     var results = [];
 
     walker.on('file', function(root, fileStats, next) {
@@ -27,13 +27,19 @@ function sync(opts) {
         return next();
       }
       var filePath = path.join(root, fileStats.name);
-      console.log('UPLOAD', filePath);
+      if (opts.cwd) {
+        filePath = path.normalize(filePath.replace(opts.cwd, ''));
+      }
       return upload({
         s3: opts.s3,
         filePath: filePath,
+        cwd: opts.cwd,
         remotePathPrefix: opts.remotePathPrefix,
         uploadOpts: JSON.parse(JSON.stringify(opts.uploadOpts))
       }).then(function(result) {
+        if (typeof opts.uploadCb == 'function') {
+          opts.uploadCb(filePath, result);
+        }
         results.push(result);
         next();
       });
