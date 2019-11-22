@@ -1,77 +1,54 @@
 'use strict';
 
-var fs = require('fs');
 var path = require('path');
-var util = require('util');
-var AWS = require('aws-sdk');
 var walk = require('walk').walk;
-var mime = require('mime-types');
-var readFile = util.promisify(fs.readFile);
+var upload = require('@ryanburnette/s3-upload-file');
 
-var s3 = new AWS.S3({ signatureVersion: 'v4' });
+function sync(opts) {
+  if (!opts) {
+    opts = {};
+  }
+  if (!opts.path) {
+    throw new Error('opts.path must be set');
+  }
+  if (!opts.uploadOpts) {
+    opts.uploadOpts = {};
+  }
+  if (!Object.keys(opts).includes('ignoreDotFiles')) {
+    opts.ignoreDotFiles = true;
+  }
 
-var required = ['source', 'bucket'];
+  return new Promise(function(resolve, reject) {
+    var walker = walk(path.join(opts.cwd || '', opts.path));
+    var results = [];
 
-module.exports = function(options) {
-  required.forEach(function(k) {
-    if (!Object.keys(options).includes(k)) {
-      throw new Error(`options.${k} is required`);
-    }
-  });
-
-  var source = options.source;
-  var destination = options.destination || '';
-  var Bucket = options.bucket;
-  var ACL = options.acl || 'public-read';
-
-  var walker = walk(path.resolve(source));
-  var files = [];
-
-  walker.on('file', function(root, fileStats, next) {
-    var filename = fileStats.name;
-    var fullpath = path.resolve(root, fileStats.name);
-    if (options.ignoreDotfiles && filename.startsWith('.')) {
-      return next();
-    }
-    if (options.ignore && options.ignore({ filename, fullpath })) {
-      return next();
-    }
-    files.push(
-      readFile(fullpath).then(function(buffer) {
-        return {
-          root,
-          relDir: root.replace(source, ''),
-          filename,
-          fullpath,
-          buffer
-        };
-      })
-    );
-    next();
-  });
-
-  walker.on('end', function() {
-    Promise.all(files).then(function(results) {
-      results.forEach(function(f) {
-        var Key = path.join(destination, f.relDir, f.filename);
-        var ContentType = mime.lookup(f.filename) || 'application/octet-stream';
-        return s3
-          .putObject({
-            Bucket,
-            Key,
-            Body: f.buffer,
-            ACL,
-            ContentType
-          })
-          .promise()
-          .then(function(result) {
-            console.log(`PUT ${Key}`);
-            return result;
-          })
-          .catch(function(err) {
-            console.log(`ERR ${err.message} ${Key}`);
-          });
+    walker.on('file', function(root, fileStats, next) {
+      if (opts.ignoreDotFiles && fileStats.name.startsWith('.')) {
+        return next();
+      }
+      var filePath = path.join(root, fileStats.name);
+      if (opts.cwd) {
+        filePath = path.normalize(filePath.replace(opts.cwd, ''));
+      }
+      return upload({
+        s3: opts.s3,
+        filePath: filePath,
+        cwd: opts.cwd,
+        remotePathPrefix: opts.remotePathPrefix,
+        uploadOpts: JSON.parse(JSON.stringify(opts.uploadOpts))
+      }).then(function(result) {
+        if (typeof opts.uploadCb == 'function') {
+          opts.uploadCb(filePath, result);
+        }
+        results.push(result);
+        next();
       });
     });
+
+    walker.on('end', function() {
+      resolve(results);
+    });
   });
-};
+}
+
+module.exports = sync;
