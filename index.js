@@ -30,19 +30,31 @@ function sync(opts) {
       if (opts.cwd) {
         filePath = path.normalize(filePath.replace(opts.cwd, ''));
       }
-      return upload({
-        s3: opts.s3,
-        filePath: filePath,
-        cwd: opts.cwd,
-        remotePathPrefix: opts.remotePathPrefix,
-        uploadOpts: JSON.parse(JSON.stringify(opts.uploadOpts))
-      }).then(function(result) {
-        if (typeof opts.uploadCb == 'function') {
-          opts.uploadCb(filePath, result);
-        }
-        results.push(result);
-        next();
-      });
+      Promise.resolve()
+        .then(function() {
+          if (opts.preUpload) {
+            return opts.preUpload(filePath);
+          }
+        })
+        .then(function() {
+          return upload({
+            s3: opts.s3,
+            filePath,
+            cwd: opts.cwd,
+            remotePathPrefix: opts.remotePathPrefix,
+            uploadOpts: JSON.parse(JSON.stringify(opts.uploadOpts))
+          });
+        })
+        .then(function(result) {
+          if (opts.postUpload) {
+            return opts.postUpload({ filePath, result });
+          }
+          return result;
+        })
+        .then(function(result) {
+          results.push(result);
+          next();
+        });
     });
 
     walker.on('end', function() {

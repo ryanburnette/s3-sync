@@ -19,9 +19,6 @@ sync({
   remotePathPrefix: '2.0.0',
   uploadOpts: {
     Bucket: process.env.BUCKET
-  },
-  uploadCb: function(filePath, result) {
-    console.log('UPLOADED', filePath);
   }
 }).then(function(results) {
   console.log('RESULTS', results);
